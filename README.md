@@ -6,42 +6,42 @@ Exploring Redis and Riak for storing sauce labs sessions
 
 1. Use Redis List for keeping track of webdriver sessions
 
-# add a new session
-LPUSH sessionList 12345
+	# add a new session
+	LPUSH sessionList 12345
 
-# list all sessions
-LRANGE sessionList 0 -1
+	# list all sessions
+	LRANGE sessionList 0 -1
 
-# remove first session in list 
-RPOP sessionList
+	# remove first session in list 
+	RPOP sessionList
 
-# move from reserve bucket to active sessions
-RPOPLPUSH reserveSessionList activeSessionList
+	# move from reserve bucket to active sessions
+	RPOPLPUSH reserveSessionList activeSessionList
 
-# see how many active sessions (to prevent exceeding concurrency)
-LLEN activeSessionList
+	# see how many active sessions (to prevent exceeding concurrency)
+	LLEN activeSessionList
 
-# blocking version
-BRPOPLPUSH reserveSessionList activeSessinList
+	# blocking version
+	BRPOPLPUSH reserveSessionList activeSessinList
 
-# remove completed session from active and move to complete
-LREM activeSessionList 12345
+	# remove completed session from active and move to complete
+	LREM activeSessionList 12345
 
 2. Collect / aggregate  webdriver session info
 
-# before session starts
-session = { :status => 'requested', :desired_capabilities => desired_capabilities }
+	# before session starts
+	session = { :status => 'requested', :desired_capabilities => desired_capabilities }
 
-# session is active
-session.merge { :id => driver.session_id, :user => sauce_username, :status => 'active' }
+	# session is active
+	session.merge { :id => driver.session_id, :user => sauce_username, :status => 'active' }
 
-# add actual capabilities
-session[:capabilities] = driver.capabilities 
-#TODO: need to get data from this object by manual serialization (e.g. capabilities[:browserName])
+	# add actual capabilities
+	session[:capabilities] = driver.capabilities 
+	#TODO: need to get data from this object by manual serialization (e.g. capabilities[:browserName])
 
-# after job is complete, get REST API info
-job_result = get_saucelabs_job(sauce_username, session_id)
-session.merge job_result
+	# after job is complete, get REST API info
+	job_result = get_saucelabs_job(sauce_username, session_id)
+	session.merge job_result
 
 3. Store session info in hash / rejson
 	use session id as hash key and as reference in reserve / active / complete list
