@@ -46,11 +46,23 @@ session.merge job_result
 3. Store session info in hash / rejson
 	use session id as hash key and as reference in reserve / active / complete list
 
+
+HMSET session_123 'id' 123 'user' 'aaron' 'browser' 'chrome' 'status' 'active' 'created' '123123123'
+HGETALL session_123
+
+
 4. use a set for session ids, not a list
 
 reserved sessions don't have a real session id, but still need a unique identifier
 
 5. Use publish / subscribe to wait for active session / complete session notifications
+
+PUBLISH activeSessions "session started: { id: ID, user: USER, etc}"
+PUBLISH activeSessions "session completed: { ... }"
+PUBLISH availableSessions "5"
+
+SUBSCRIBE activeSessions availableSessions
+
 
 either poll for active sessions and BRPUSHLPOP 
 
