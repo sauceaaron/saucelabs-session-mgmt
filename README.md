@@ -5,7 +5,7 @@ Exploring Redis and Riak for storing sauce labs sessions
 
 
 1. Use Redis List for keeping track of webdriver sessions
-
+```
 	# add a new session
 	LPUSH sessionList 12345
 
@@ -26,9 +26,10 @@ Exploring Redis and Riak for storing sauce labs sessions
 
 	# remove completed session from active and move to complete
 	LREM activeSessionList 12345
+```
 
 2. Collect / aggregate  webdriver session info
-
+```
 	# before session starts
 	session = { :status => 'requested', :desired_capabilities => desired_capabilities }
 
@@ -42,14 +43,14 @@ Exploring Redis and Riak for storing sauce labs sessions
 	# after job is complete, get REST API info
 	job_result = get_saucelabs_job(sauce_username, session_id)
 	session.merge job_result
-
+```
 3. Store session info in hash / rejson
 	use session id as hash key and as reference in reserve / active / complete list
 
-
+```
 HMSET session_123 'id' 123 'user' 'aaron' 'browser' 'chrome' 'status' 'active' 'created' '123123123'
 HGETALL session_123
-
+```
 
 4. use a set for session ids, not a list
 
@@ -57,12 +58,13 @@ reserved sessions don't have a real session id, but still need a unique identifi
 
 5. Use publish / subscribe to wait for active session / complete session notifications
 
+```
 PUBLISH activeSessions "session started: { id: ID, user: USER, etc}"
 PUBLISH activeSessions "session completed: { ... }"
 PUBLISH availableSessions "5"
 
 SUBSCRIBE activeSessions availableSessions
-
+```
 
 either poll for active sessions and BRPUSHLPOP 
 
